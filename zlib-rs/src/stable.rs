@@ -203,7 +203,10 @@ impl Inflate {
         }
     }
 
-    /// TODO: docs
+    /// Clone the [`Inflate`] state.
+    ///
+    /// This is conceptually like [`Clone::clone`](`core::clone::Clone::clone`),
+    /// except it's fallible.
     pub fn try_clone(&self) -> Result<Self, InflateCloneError> {
         let mut new_inner = MaybeUninit::uninit();
         // Safety: self is initialized
@@ -225,7 +228,7 @@ impl Inflate {
 
 impl Clone for Inflate {
     /// Returns a duplicate of the value.
-    /// 
+    ///
     /// # Panics
     /// Panics if [`Inflate::try_clone`] returns an error.
     fn clone(&self) -> Self {
@@ -233,14 +236,8 @@ impl Clone for Inflate {
             Ok(new) => new,
             Err(InflateCloneError::MemError) => panic!("allocation failed"),
             Err(InflateCloneError::StreamError) => panic!("Inflate in inconsistent state"),
-            Err(other) => unreachable!("Inflate::try_clone does not return {other:?}"),
         }
     }
-
-    // TODO: optimization potential by implementing clone_from
-    //       Current hurdle is that going from `&mut self.inner` to
-    //       `&mut MaybeUninit<InflateStream<'a>>` in a cheap way requires
-    //       pointer massaging.
 }
 
 impl Drop for Inflate {
@@ -428,7 +425,10 @@ impl Deflate {
         }
     }
 
-    /// TODO: docs
+    /// Clone the [`Deflate`] state.
+    ///
+    /// This is conceptually like [`Clone::clone`](`core::clone::Clone::clone`),
+    /// except it's fallible.
     pub fn try_clone(&self) -> Result<Self, DeflateCloneError> {
         let mut new_inner = MaybeUninit::uninit();
         match deflate::copy(&mut new_inner, &self.inner) {
@@ -448,7 +448,7 @@ impl Deflate {
 
 impl Clone for Deflate {
     /// Returns a duplicate of the value.
-    /// 
+    ///
     /// # Panics
     /// Panics if [`Deflate::try_clone`] returns an error.
     fn clone(&self) -> Self {
@@ -457,11 +457,6 @@ impl Clone for Deflate {
             Err(DeflateCloneError::MemError) => panic!("allocation failed"),
         }
     }
-
-    // TODO: optimization potential by implementing clone_from
-    //       Current hurdle is that going from `&mut self.inner` to
-    //       `&mut MaybeUninit<DeflateStream<'a>>` in a cheap way requires
-    //       pointer massaging.
 }
 
 impl Drop for Deflate {
